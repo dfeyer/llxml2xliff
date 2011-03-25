@@ -1,0 +1,60 @@
+#!/bin/bash
+
+PATH_core="/Users/dom/Documents/Projets/TYPO3/Core/typo3_trunk_dfeyer/typo3"
+PATH_l10n="/Users/dom/Sites/dev/sandbox.typo3/typo3conf/l10n"
+
+EXTENSION=$1
+LANG=$2
+if [ "$EXTENSION" == "" ] || [ "$LANG" == "" ]; then
+  echo 
+  echo "Usage: $0 extkey langkey"
+  exit 1
+fi
+
+function getLLXMLList() {
+  find ${PATH_core}/sysext/$1 -name "locallang*.xml"
+}
+
+function convert()
+{
+  if [ "$2" = "default" ]; then
+    local target="\"\""
+    local output="Ressources/xliff/${4}$(echo $3 | sed s/\.xml$/\.xlf/)"
+  else
+    local target="$2"
+    local output="Ressources/xliff/${4}$(echo $(basename $2) | sed -e s/\.xml$/\.xlf/)"
+  fi
+
+  local source="$3"
+  
+  mkdir -p Ressources/xliff/$4 2>/dev/null
+
+  xsltproc --stringparam source $target \
+    --stringparam date "$(date -u)" \
+    xml2xliff.xsl $source > $output 2>/dev/null
+
+}
+
+# Generate target XLIFF
+for source in $(getLLXMLList $EXTENSION); do
+  echo
+  llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
+  llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
+  target="$PATH_l10n/$LANG/$llfilename"
+  if [ -f $dest ] && [ -f $target ]; then
+    echo "[info] $(basename $source) -> $(basename $target)"
+    convert $EXTENSION $target $source $llfilepath
+  else
+    echo "[warning] File missing ($(basename $source) -> $(basename $target))"
+  fi
+done
+
+# Generate source XLIFF
+for source in $(getLLXMLList $EXTENSION); do
+	llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
+	llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
+	output="Ressources/xliff/${llfilepath}$(echo $(basename $source) | sed -e s/\.xml$/\.xlf/)"
+	xsltproc --stringparam source "" \
+	    --stringparam date "$(date -u)" \
+	    xml2xliff.xsl $source > $output 2>/dev/null
+done
