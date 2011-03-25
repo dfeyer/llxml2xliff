@@ -34,7 +34,7 @@ function convert()
   #echo $output
   xsltproc --stringparam source $target \
     --stringparam date "$(date -u)" \
-	--stringparam lang $4 \
+	--stringparam lang $5 \
 	--stringparam extension $1 \
     xml2xliff.xsl $source > $output
 
