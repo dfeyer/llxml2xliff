@@ -5,58 +5,74 @@ mkdir Ressources 2>/dev/null
 PATH_core="/Users/dom/Documents/Projets/TYPO3/Core/typo3_trunk_dfeyer/typo3"
 PATH_l10n="/Users/dom/Sites/dev/sandbox.typo3/typo3conf/l10n"
 
-EXTENSION=$1
-LANG=$2
-if [ "$EXTENSION" == "" ] || [ "$LANG" == "" ]; then
-  echo 
-  echo "Usage: $0 extkey langkey"
-  exit 1
-fi
-
 function getLLXMLList() {
   find ${PATH_core}/sysext/$1 -name "locallang*.xml"
+}
+
+function getLanguageList() {
+  ls -l ${PATH_l10n}/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
+}
+
+function getExtensionList() {
+  ls -l ${PATH_core}/sysext/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
 }
 
 function convert()
 {
   if [ "$2" = "default" ]; then
     local target="\"\""
-    local output="Ressources/xliff/${4}$(echo $3 | sed s/\.xml$/\.xlf/)"
+    local output="Ressources/xliff/en/${4}$(echo $3 | sed s/\.xml$/\.xlf/)"
+	mkdir -p Ressources/xliff/en/${4} 2>/dev/null
   else
     local target="$2"
-    local output="Ressources/xliff/${4}$(echo $(basename $2) | sed -e s/\.xml$/\.xlf/)"
+    local output="Ressources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#")$(echo $(basename $target) | sed -e s/\.xml$/\.xlf/ | sed -e s/^$5\.//)"
+	mkdir -p Ressources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#") 2>/dev/null
   fi
 
   local source="$3"
   
-  mkdir -p Ressources/xliff/$4 2>/dev/null
-
+  #echo $output
   xsltproc --stringparam source $target \
     --stringparam date "$(date -u)" \
-    xml2xliff.xsl $source > $output 2>/dev/null
+	--stringparam lang $4 \
+	--stringparam extension $1 \
+    xml2xliff.xsl $source > $output
 
 }
 
-# Generate target XLIFF
-for source in $(getLLXMLList $EXTENSION); do
-  echo
-  llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
-  llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
-  target="$PATH_l10n/$LANG/$llfilename"
-  if [ -f $dest ] && [ -f $target ]; then
-    echo "[info] $(basename $source) -> $(basename $target)"
-    convert $EXTENSION $target $source $llfilepath
-  else
-    echo "[warning] File missing ($(basename $source) -> $(basename $target))"
-  fi
-done
+for EXTENSION in $(getExtensionList); do
+	echo
+	echo "Processing extension $EXTENSION ..."
+	# Generate target XLIFF
+	for LANG in $(getLanguageList); do 
+		echo
+		echo "Processing language: $LANG"
+		for source in $(getLLXMLList $EXTENSION); do
+		  llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
+		  llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
+		  target="$PATH_l10n/$LANG/$llfilename"
+		  if [ -f $source ] && [ -f $target ]; then
+		    echo "[info] $(basename $source) -> $(basename $target)"
+		    convert $EXTENSION $target $source $llfilepath $LANG
+		  #else
+		    #echo "[warning] File missing ($(basename $source) -> $(basename $target))"
+		  fi
+		done
+	done
+	
+	# Generate source XLIFF
+	for source in $(getLLXMLList $EXTENSION); do
+		llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
+		llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
+		outputdirectory="Ressources/xliff/$(echo ${llfilepath} | sed "s#$EXTENSION/#$EXTENSION/en/#")"
+		mkdir -p $outputdirectory 2>/dev/null
+		output="$outputdirectory$(echo $(basename $source) | sed -e s/\.xml$/\.xlf/)"
+		xsltproc --stringparam source "" \
+			--stringparam lang $LANG \
+			--stringparam extension $EXTENSION \
+		    --stringparam date "$(date -u)" \
+		    xml2xliff.xsl $source > $output 2>/dev/null
+	done
+done 
 
-# Generate source XLIFF
-for source in $(getLLXMLList $EXTENSION); do
-	llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
-	llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
-	output="Ressources/xliff/${llfilepath}$(echo $(basename $source) | sed -e s/\.xml$/\.xlf/)"
-	xsltproc --stringparam source "" \
-	    --stringparam date "$(date -u)" \
-	    xml2xliff.xsl $source > $output 2>/dev/null
-done
+exit 0

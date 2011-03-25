@@ -11,7 +11,7 @@
 	
 	<xsl:template match="/T3locallang">
 		<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-			<file source-language="EN" target-language="en" datatype="plaintext" original="messages" date="{$date}" product-name="messages">
+			<file source-language="EN" target-language="{$lang}" datatype="plaintext" original="messages" date="{$date}" product-name="{$extension}">
 				<header>
 					<description><xsl:value-of select="meta/description" /></description>
 					<type><xsl:value-of select="meta/type" /></type>
