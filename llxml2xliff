@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir Ressources 2>/dev/null
+
 PATH_core="/Users/dom/Documents/Projets/TYPO3/Core/typo3_trunk_dfeyer/typo3"
 PATH_l10n="/Users/dom/Sites/dev/sandbox.typo3/typo3conf/l10n"
 
