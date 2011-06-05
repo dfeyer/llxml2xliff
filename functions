@@ -22,7 +22,7 @@ function createLanguagePack() {
 	mkdir -p $PATH_l10n/$LANG/$EXTENSION
   fi
 
-  local SOURCE="Ressources/xliff/$EXTENSION/$LANG/$LL_FILE"
+  local SOURCE="Resources/xliff/$EXTENSION/$LANG/$LL_FILE"
   local DESTINATION_FILE="$(echo $LL_FILE | sed s/locallang/$LANG\.locallang/)"
   local LLXML_FILE="$(echo $DESTINATION_FILE | sed s#\.xlf#\.xml#)"
 
@@ -39,12 +39,12 @@ function convert()
 {
   if [ "$2" = "default" ]; then
     local target="\"\""
-    local output="Ressources/xliff/en/${4}$(echo $3 | sed s/\.xml$/\.xlf/)"
-  mkdir -p Ressources/xliff/en/${4} 2>/dev/null
+    local output="Resources/xliff/en/${4}$(echo $3 | sed s/\.xml$/\.xlf/)"
+  mkdir -p Resources/xliff/en/${4} 2>/dev/null
   else
     local target="$2"
-    local output="Ressources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#")$(echo $(basename $target) | sed -e s/\.xml$/\.xlf/ | sed -e s/^$5\.//)"
-  mkdir -p Ressources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#") 2>/dev/null
+    local output="Resources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#")$(echo $(basename $target) | sed -e s/\.xml$/\.xlf/ | sed -e s/^$5\.//)"
+  mkdir -p Resources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#") 2>/dev/null
   fi
 
   local source="$3"

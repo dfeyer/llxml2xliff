@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir Ressources 2>/dev/null
+mkdir Resources 2>/dev/null
 
 PATH_site=$1
 PATH_core="$PATH_site/typo3"

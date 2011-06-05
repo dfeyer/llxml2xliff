@@ -1,11 +1,19 @@
 #!/bin/bash
 
-PATH_src="/Users/dom/Documents/Projets/TYPO3/Core/typo3_trunk_dfeyer"
-PATH_l10n="/Users/dom/Sites/dev/sandbox.typo3/typo3conf/l10n"
+PATH_site=$1
+PATH_core="$PATH_site/typo3"
+PATH_l10n="$PATH_site/typo3conf/l10n"
+
+if [ ! -d $PATH_site ] || [ ! -d $PATH_core ] || [ ! -d $PATH_i10n ]; then
+  echo
+  echo "Not a TYPO3 installation, please check your path ..."
+  echo
+  exit 1
+fi
 
 . ./functions
 
-for XLF_FILE in $(find Ressources/xliff/*/en -name "*.xlf"); do
+for XLF_FILE in $(find ./Resources/xliff/*/en -name "*.xlf"); do
   EXTENSION=$(echo $XLF_FILE | sed s#Ressources/xliff/## | cut -d/ -f1)
   SOURCE_FILE=$(echo $XLF_FILE | sed s#Ressources/xliff/$EXTENSION/en/##)
   XML_FILE=$(echo $SOURCE_FILE | sed s/\.xlf/\.xml/)
@@ -13,10 +21,10 @@ for XLF_FILE in $(find Ressources/xliff/*/en -name "*.xlf"); do
   #
   # Replace source XML file
   echo
-  if [ -f $PATH_src/typo3/sysext/$EXTENSION/$XML_FILE ]; then
-    rm $PATH_src/typo3/sysext/$EXTENSION/$XML_FILE
+  if [ -f $PATH_site/typo3/sysext/$EXTENSION/$XML_FILE ]; then
+    rm $PATH_site/typo3/sysext/$EXTENSION/$XML_FILE
   fi
-  cp -f $XLF_FILE $PATH_src/typo3/sysext/$EXTENSION/$SOURCE_FILE
+  cp -f $XLF_FILE $PATH_site/typo3/sysext/$EXTENSION/$SOURCE_FILE
 
   #
   # Create Language pack

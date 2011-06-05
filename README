@@ -1,0 +1,22 @@
+LLXML2XLIFF
+=============
+
+Batch conversion of the core LLXML file to XLIFF
+
+How to
+------
+
+1. First update ALL the translation from the translation server (Extension Manager)
+2. Open a shell, and launch the command "./llxml2xliff /var/www/sandbox.typo3"
+3. The directory "/var/www/sandbox.typo3" must be a valid root TYPO3 path
+4. Take a coffee
+
+After the coffee you can found a directory named "Resources/xliff", you can found here all the converted file. If you wont to replace the old LLXML file with the XLIFF file you can use the tools "replacellxml"
+
+  ./replacellxml /var/www/sandbox.typo3
+
+Thanks it ...
+
+You can check an XLIFF compatible TYPO3 4.6 ALPHA version on:
+https://github.com/dfeyer/TYPO3v4-Core
+
