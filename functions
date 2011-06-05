@@ -1,0 +1,59 @@
+#!/bin/bash
+
+function getLLXMLList() {
+  find ${PATH_core}/sysext/$1 -name "locallang*.xml"
+}
+
+function getLanguageList() {
+  ls -l ${PATH_l10n}/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
+}
+
+function getExtensionList() {
+  ls -l ${PATH_core}/sysext/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
+}
+
+function createLanguagePack() {
+  local EXTENSION=$1
+  local LANG=$2
+  local LL_FILE=$3
+  echo
+  echo "$EXTENSION ($LANG)"
+  if [ ! -d $PATH_l10n/$LANG/$EXTENSION ]; then
+	mkdir -p $PATH_l10n/$LANG/$EXTENSION
+  fi
+
+  local SOURCE="Ressources/xliff/$EXTENSION/$LANG/$LL_FILE"
+  local DESTINATION_FILE="$(echo $LL_FILE | sed s/locallang/$LANG\.locallang/)"
+  local LLXML_FILE="$(echo $DESTINATION_FILE | sed s#\.xlf#\.xml#)"
+
+  # Remove XML file
+  if [ -f $PATH_l10n/$LANG/$EXTENSION/$LLXML_FILE ]; then
+	rm -f $PATH_l10n/$LANG/$EXTENSION/$LLXML_FILE
+  fi
+  if [ -f $SOURCE ]; then
+  	cp -f $SOURCE $PATH_l10n/$LANG/$EXTENSION/$DESTINATION_FILE
+  fi
+}
+
+function convert()
+{
+  if [ "$2" = "default" ]; then
+    local target="\"\""
+    local output="Ressources/xliff/en/${4}$(echo $3 | sed s/\.xml$/\.xlf/)"
+  mkdir -p Ressources/xliff/en/${4} 2>/dev/null
+  else
+    local target="$2"
+    local output="Ressources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#")$(echo $(basename $target) | sed -e s/\.xml$/\.xlf/ | sed -e s/^$5\.//)"
+  mkdir -p Ressources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#") 2>/dev/null
+  fi
+
+  local source="$3"
+  
+  #echo $output
+  xsltproc --stringparam source $target \
+    --stringparam date "$(date -u)" \
+    --stringparam lang $5 \
+    --stringparam extension $1 \
+    xml2xliff.xsl $source > $output
+
+}

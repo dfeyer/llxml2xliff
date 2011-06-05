@@ -2,51 +2,25 @@
 
 mkdir Ressources 2>/dev/null
 
-PATH_core="/Users/dom/Documents/Projets/TYPO3/Core/typo3_trunk_dfeyer/typo3"
-PATH_l10n="/Users/dom/Sites/dev/sandbox.typo3/typo3conf/l10n"
+PATH_site=$1
+PATH_core="$PATH_site/typo3"
+PATH_l10n="$PATH_site/typo3conf/l10n"
 
-function getLLXMLList() {
-  find ${PATH_core}/sysext/$1 -name "locallang*.xml"
-}
+if [ ! -d $PATH_site ] || [ ! -d $PATH_core ] || [ ! -d $PATH_i10n ]; then
+  echo
+  echo "Not a TYPO3 installation, please check your path ..."
+  echo
+  exit 1
+fi
 
-function getLanguageList() {
-  ls -l ${PATH_l10n}/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
-}
-
-function getExtensionList() {
-  ls -l ${PATH_core}/sysext/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
-}
-
-function convert()
-{
-  if [ "$2" = "default" ]; then
-    local target="\"\""
-    local output="Ressources/xliff/en/${4}$(echo $3 | sed s/\.xml$/\.xlf/)"
-	mkdir -p Ressources/xliff/en/${4} 2>/dev/null
-  else
-    local target="$2"
-    local output="Ressources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#")$(echo $(basename $target) | sed -e s/\.xml$/\.xlf/ | sed -e s/^$5\.//)"
-	mkdir -p Ressources/xliff/$(echo ${4} | sed "s#$EXTENSION/#$EXTENSION/$LANG/#") 2>/dev/null
-  fi
-
-  local source="$3"
-  
-  #echo $output
-  xsltproc --stringparam source $target \
-    --stringparam date "$(date -u)" \
-	--stringparam lang $5 \
-	--stringparam extension $1 \
-    xml2xliff.xsl $source > $output
-
-}
+. ./functions
 
 for EXTENSION in $(getExtensionList); do
 	echo
 	echo "Processing extension $EXTENSION ..."
 	# Generate target XLIFF
 	for LANG in $(getLanguageList); do 
-		echo
-		echo "Processing language: $LANG"
+		echo "Processing language: $EXTENSION - $LANG"
 		for source in $(getLLXMLList $EXTENSION); do
 		  llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
 		  llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
@@ -54,10 +28,8 @@ for EXTENSION in $(getExtensionList); do
 		  if [ -f $source ] && [ -f $target ]; then
 		    echo "[info] $(basename $source) -> $(basename $target)"
 		    convert $EXTENSION $target $source $llfilepath $LANG
-		  #else
-		    #echo "[warning] File missing ($(basename $source) -> $(basename $target))"
 		  fi
-		done
+		done | awk '{print "\t"$0}'
 	done
 	
 	# Generate source XLIFF
@@ -70,8 +42,8 @@ for EXTENSION in $(getExtensionList); do
 		xsltproc --stringparam source "" \
 			--stringparam lang $LANG \
 			--stringparam extension $EXTENSION \
-		    --stringparam date "$(date -u)" \
-		    xml2xliff.xsl $source > $output 2>/dev/null
+		  --stringparam date "$(date -u)" \
+		  xml2xliff.xsl $source > $output 2>/dev/null
 	done
 done 
 

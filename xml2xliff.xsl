@@ -23,11 +23,12 @@
 		<xsl:variable name="index" select="@index"/>
 		<trans-unit id="{@index}">
 			<source><xsl:value-of select="." /></source>
-			<xsl:if test="string-length($source)!=0">
-				<target><xsl:value-of select="document($source)/T3locallangExt/data[@type='array']/languageKey/label[@index=$index]" /></target>
+			<xsl:variable name="target" select="document($source)/T3locallangExt/data[@type='array']/languageKey/label[@index=$index]"/>
+			<xsl:if test="string-length($target)!=0">
+				<target state="translated"><xsl:value-of select="document($source)/T3locallangExt/data[@type='array']/languageKey/label[@index=$index]" /></target>
 			</xsl:if>
 			<xsl:if test="string-length($source)=0">
-				<target><xsl:value-of select="." /></target>
+				<target state="translated"><xsl:value-of select="." /></target>
 			</xsl:if>
 		</trans-unit>
 	</xsl:template>

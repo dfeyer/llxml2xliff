@@ -1,0 +1,30 @@
+#!/bin/bash
+
+PATH_src="/Users/dom/Documents/Projets/TYPO3/Core/typo3_trunk_dfeyer"
+PATH_l10n="/Users/dom/Sites/dev/sandbox.typo3/typo3conf/l10n"
+
+. ./functions
+
+for XLF_FILE in $(find Ressources/xliff/*/en -name "*.xlf"); do
+  EXTENSION=$(echo $XLF_FILE | sed s#Ressources/xliff/## | cut -d/ -f1)
+  SOURCE_FILE=$(echo $XLF_FILE | sed s#Ressources/xliff/$EXTENSION/en/##)
+  XML_FILE=$(echo $SOURCE_FILE | sed s/\.xlf/\.xml/)
+
+  #
+  # Replace source XML file
+  echo
+  if [ -f $PATH_src/typo3/sysext/$EXTENSION/$XML_FILE ]; then
+    rm $PATH_src/typo3/sysext/$EXTENSION/$XML_FILE
+  fi
+  cp -f $XLF_FILE $PATH_src/typo3/sysext/$EXTENSION/$SOURCE_FILE
+
+  #
+  # Create Language pack
+
+  for LANG in $(getLanguageList); do
+    createLanguagePack $EXTENSION $LANG $SOURCE_FILE
+  done
+
+done
+
+
