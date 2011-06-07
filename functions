@@ -27,9 +27,9 @@ function createLanguagePack() {
   local LLXML_FILE="$(echo $DESTINATION_FILE | sed s#\.xlf#\.xml#)"
 
   # Remove XML file
-  if [ -f $PATH_l10n/$LANG/$EXTENSION/$LLXML_FILE ]; then
-	rm -f $PATH_l10n/$LANG/$EXTENSION/$LLXML_FILE
-  fi
+  #if [ -f $PATH_l10n/$LANG/$EXTENSION/$LLXML_FILE ]; then
+	#  rm -f $PATH_l10n/$LANG/$EXTENSION/$LLXML_FILE
+  #fi
   if [ -f $SOURCE ]; then
   	cp -f $SOURCE $PATH_l10n/$LANG/$EXTENSION/$DESTINATION_FILE
   fi

@@ -14,8 +14,8 @@ fi
 . ./functions
 
 for XLF_FILE in $(find ./Resources/xliff/*/en -name "*.xlf"); do
-  EXTENSION=$(echo $XLF_FILE | sed s#Resources/xliff/## | cut -d/ -f1)
-  SOURCE_FILE=$(echo $XLF_FILE | sed s#Resources/xliff/$EXTENSION/en/##)
+  EXTENSION=$(echo $XLF_FILE | cut -d/ -f4)
+  SOURCE_FILE=$(echo $XLF_FILE | sed s#Resources/xliff/$EXTENSION/en/## | sed s#./##)
   XML_FILE=$(echo $SOURCE_FILE | sed s/\.xlf/\.xml/)
 
   #
