@@ -36,7 +36,7 @@ for EXTENSION in $(getExtensionList); do
 	for source in $(getLLXMLList $EXTENSION); do
 		llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
 		llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
-		outputdirectory="Ressources/xliff/$(echo ${llfilepath} | sed "s#$EXTENSION/#$EXTENSION/en/#")"
+		outputdirectory="Resources/xliff/$(echo ${llfilepath} | sed "s#$EXTENSION/#$EXTENSION/en/#")"
 		mkdir -p $outputdirectory 2>/dev/null
 		output="$outputdirectory$(echo $(basename $source) | sed -e s/\.xml$/\.xlf/)"
 		xsltproc --stringparam source "" \

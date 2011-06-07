@@ -14,16 +14,16 @@ fi
 . ./functions
 
 for XLF_FILE in $(find ./Resources/xliff/*/en -name "*.xlf"); do
-  EXTENSION=$(echo $XLF_FILE | sed s#Ressources/xliff/## | cut -d/ -f1)
-  SOURCE_FILE=$(echo $XLF_FILE | sed s#Ressources/xliff/$EXTENSION/en/##)
+  EXTENSION=$(echo $XLF_FILE | sed s#Resources/xliff/## | cut -d/ -f1)
+  SOURCE_FILE=$(echo $XLF_FILE | sed s#Resources/xliff/$EXTENSION/en/##)
   XML_FILE=$(echo $SOURCE_FILE | sed s/\.xlf/\.xml/)
 
   #
   # Replace source XML file
   echo
-  if [ -f $PATH_site/typo3/sysext/$EXTENSION/$XML_FILE ]; then
-    rm $PATH_site/typo3/sysext/$EXTENSION/$XML_FILE
-  fi
+#  if [ -f $PATH_site/typo3/sysext/$EXTENSION/$XML_FILE ]; then
+#    rm $PATH_site/typo3/sysext/$EXTENSION/$XML_FILE
+#  fi
   cp -f $XLF_FILE $PATH_site/typo3/sysext/$EXTENSION/$SOURCE_FILE
 
   #
