@@ -4,6 +4,8 @@
 # @author Dominique Feyer <dominique.feyer@reelpeek.net>
 # Tools used by TYPO3 to convert the old translation server to XLIFF
 
+set -e
+
 mkdir Resources 2>/dev/null
 
 PATH_site=$1
@@ -20,7 +22,7 @@ fi
 . ./functions
 
 function doTarget() {
-	local EXTENSION = $1
+	local EXTENSION=$1
 	if [ "$EXTENSION" == "" ]; then
 		echo "Please provide a valid extension"
 		exit 1
@@ -29,7 +31,7 @@ function doTarget() {
 	for LANG in $(getLanguageList); do 
 		echo "Processing language: $EXTENSION - $LANG"
 		for source in $(getLLXMLList $EXTENSION); do
-		  llfilename=$(echo $source | sed -e "s#${PATH_core}/sysext/##,s#${PATH_site}/typo3conf/ext/##" | sed s/\\/locallang/\\/$LANG\.locallang/)
+		  llfilename=$(echo $source | sed -e "s#${PATH_core}/sysext/##;s#${PATH_site}/typo3conf/ext/##" | sed s/\\/locallang/\\/$LANG\.locallang/)
 		  llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
 		  target="$PATH_l10n/$LANG/$llfilename"
 		  if [ -f $source ] && [ -f $target ]; then
@@ -41,14 +43,14 @@ function doTarget() {
 }
 
 function doSource() {
-	local EXTENSION = $1
+	local EXTENSION=$1
 	if [ "$EXTENSION" == "" ]; then
 		echo "Please provide a valid extension"
 		exit 1
 	fi
 	# Generate source XLIFF
 	for source in $(getLLXMLList $EXTENSION); do
-		llfilename=$(echo $source | sed -e "s#${PATH_core}/sysext/##,s#${PATH_site}/typo3conf/ext/##" | sed s/\\/locallang/\\/$LANG\.locallang/)
+		llfilename=$(echo $source | sed -e "s#${PATH_core}/sysext/##;s#${PATH_site}/typo3conf/ext/##" | sed s/\\/locallang/\\/$LANG\.locallang/)
 		llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
 		outputdirectory="Resources/xliff/$(echo ${llfilepath} | sed "s#$EXTENSION/#$EXTENSION/en/#")"
 		mkdir -p $outputdirectory 2>/dev/null
@@ -61,11 +63,18 @@ function doSource() {
 	done
 }
 
-for EXTENSION in $(getExtensionList); do
+for SYSEXT_EXTENSION in $(getExtensionList sysext); do
 	echo
-	echo "Processing extension $EXTENSION ..."
-	doTarget $EXTENSION
-	doSource $EXTENSION
-done 
+	echo "Processing system extension $SYSEXT_EXTENSION ..."
+	doTarget $SYSEXT_EXTENSION
+	doSource $SYSEXT_EXTENSION
+done
+
+for EXT_EXTENSION in $(getExtensionList ext); do
+	echo
+	echo "Processing local extension $EXT_EXTENSION ..."
+	doTarget $EXT_EXTENSION
+	doSource $EXT_EXTENSION
+done
 
 exit 0
