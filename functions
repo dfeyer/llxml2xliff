@@ -1,7 +1,14 @@
 #!/bin/bash
 
 function getLLXMLList() {
-  find ${PATH_core}/sysext/$1 -name "locallang*.xml"
+	if [ -d ${PATH_core}/sysext/$1 ]; then
+  		find ${PATH_core}/sysext/$1 -name "locallang*.xml"
+		return 0
+	fi
+	if [ -d ${PATH_site}/typo3conf/ext/$1 ]; then
+  		find ${PATH_site}/typo3conf/ext/$1 -name "locallang*.xml"
+		return 0
+	fi
 }
 
 function getLanguageList() {
@@ -9,7 +16,24 @@ function getLanguageList() {
 }
 
 function getExtensionList() {
-  ls -l ${PATH_core}/sysext/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
+	if [ "$1" = "" ]; then
+		echo "Invalid argument, provide sysext or ext"
+		exit 1
+	fi
+
+	# Check core extension
+	if [ $1 = "sysext" ]; then
+		ls -l ${PATH_core}/sysext/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
+		return 0
+	fi
+
+	# Check local extension
+	if [ $1 = "ext" ]; then
+		ls -l ${PATH_site}/typo3conf/ext/ | egrep "^d" | awk "{print \$9}" | sed s/\\///
+		return 0
+	fi
+
+	return 1
 }
 
 function createLanguagePack() {

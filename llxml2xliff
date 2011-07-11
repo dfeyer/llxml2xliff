@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# llxml2xliff
+# @author Dominique Feyer <dominique.feyer@reelpeek.net>
+# Tools used by TYPO3 to convert the old translation server to XLIFF
+
 mkdir Resources 2>/dev/null
 
 PATH_site=$1
@@ -7,22 +11,25 @@ PATH_core="$PATH_site/typo3"
 PATH_l10n="$PATH_site/typo3conf/l10n"
 
 if [ ! -d $PATH_site ] || [ ! -d $PATH_core ] || [ ! -d $PATH_i10n ]; then
-  echo
-  echo "Not a TYPO3 installation, please check your path ..."
-  echo
-  exit 1
+	 echo
+	 echo "Not a TYPO3 installation, please check your path ..."
+	 echo
+	 exit 1
 fi
 
 . ./functions
 
-for EXTENSION in $(getExtensionList); do
-	echo
-	echo "Processing extension $EXTENSION ..."
+function doTarget() {
+	local EXTENSION = $1
+	if [ "$EXTENSION" == "" ]; then
+		echo "Please provide a valid extension"
+		exit 1
+	fi
 	# Generate target XLIFF
 	for LANG in $(getLanguageList); do 
 		echo "Processing language: $EXTENSION - $LANG"
 		for source in $(getLLXMLList $EXTENSION); do
-		  llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
+		  llfilename=$(echo $source | sed -e "s#${PATH_core}/sysext/##,s#${PATH_site}/typo3conf/ext/##" | sed s/\\/locallang/\\/$LANG\.locallang/)
 		  llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
 		  target="$PATH_l10n/$LANG/$llfilename"
 		  if [ -f $source ] && [ -f $target ]; then
@@ -31,10 +38,17 @@ for EXTENSION in $(getExtensionList); do
 		  fi
 		done | awk '{print "\t"$0}'
 	done
-	
+}
+
+function doSource() {
+	local EXTENSION = $1
+	if [ "$EXTENSION" == "" ]; then
+		echo "Please provide a valid extension"
+		exit 1
+	fi
 	# Generate source XLIFF
 	for source in $(getLLXMLList $EXTENSION); do
-		llfilename=$(echo $source | sed s#${PATH_core}/sysext/## | sed s/\\/locallang/\\/$LANG\.locallang/)
+		llfilename=$(echo $source | sed -e "s#${PATH_core}/sysext/##,s#${PATH_site}/typo3conf/ext/##" | sed s/\\/locallang/\\/$LANG\.locallang/)
 		llfilepath=$(echo $llfilename | sed s/$(basename $llfilename)//)
 		outputdirectory="Resources/xliff/$(echo ${llfilepath} | sed "s#$EXTENSION/#$EXTENSION/en/#")"
 		mkdir -p $outputdirectory 2>/dev/null
@@ -45,6 +59,13 @@ for EXTENSION in $(getExtensionList); do
 		  --stringparam date "$(date -u)" \
 		  xml2xliff.xsl $source > $output 2>/dev/null
 	done
+}
+
+for EXTENSION in $(getExtensionList); do
+	echo
+	echo "Processing extension $EXTENSION ..."
+	doTarget $EXTENSION
+	doSource $EXTENSION
 done 
 
 exit 0
